@@ -24,9 +24,7 @@ Llama Spotter analyzes web page text and estimates the likelihood it was written
 - 🚫 **Whitelist / Blacklist** — Skip trusted domains or always-flag specific ones
 - 🔒 **100% local** — Inference runs on your GPU via Ollama, nothing is sent externally
 
-<img width="1632" height="1168" alt="image" src="https://github.com/user-attachments/assets/8ae2e840-dc1e-4c5a-91d1-6d21a1c29f29" />
-
-<img width="1397" height="1138" alt="image" src="https://github.com/user-attachments/assets/6b0352c4-718d-4410-8122-0a0eb8edc141" />
+<img width="450" height="322" alt="image" src="https://github.com/user-attachments/assets/8ae2e840-dc1e-4c5a-91d1-6d21a1c29f29" /> <img width="450" height="367" alt="image" src="https://github.com/user-attachments/assets/6b0352c4-718d-4410-8122-0a0eb8edc141" />
 
 
 ---
