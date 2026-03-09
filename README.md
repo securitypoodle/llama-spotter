@@ -1,4 +1,4 @@
-# 🦙 Llama Spotter
+# <img width="50" height="50" alt="llama-spotter-icon" src="https://github.com/user-attachments/assets/13f99ca1-6e71-4707-a9cf-fdf234ff3aa1" /> Llama Spotter
 
 > A Firefox extension that detects AI-generated text on any webpage — fully local, free, and private.
 
