@@ -1,0 +1,38 @@
+{
+  "manifest_version": 2,
+  "name": "AI Text Detector",
+  "version": "1.0.0",
+  "description": "Detects AI-generated text on web pages using Mistral 7b model.",
+  "permissions": [
+    "activeTab",
+    "storage",
+    "contextMenus",
+    "http://localhost:5000/*"
+  ],
+  "background": {
+    "scripts": ["background.js"],
+    "persistent": false
+  },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"],
+      "css": ["styles.css"],
+      "run_at": "document_idle"
+    }
+  ],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Llama Spotter",
+    "default_icon": {
+      "16": "icons/llama-spotter-icon.png",
+      "32": "icons/llama-spotter-icon.png",
+      "48": "icons/llama-spotter-icon.png"
+    }
+  },
+  "icons": {
+    "16": "icons/llama-spotter-icon.png",
+    "32": "icons/llama-spotter-icon.png",
+    "48": "icons/llama-spotter-icon.png"
+  }
+}

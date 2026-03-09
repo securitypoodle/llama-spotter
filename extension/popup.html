@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Text Detector</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    width: 360px;
+    min-height: 480px;
+    background: #1e1e2e;
+    color: #cdd6f4;
+    font-family: system-ui, -apple-system, sans-serif;
+    font-size: 13px;
+  }
+
+  /* Header */
+  .header {
+    background: #181825;
+    padding: 14px 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .header-icon { font-size: 22px; }
+  .header-title { font-size: 15px; font-weight: 700; color: #cdd6f4; }
+  .header-sub { font-size: 11px; color: #6c7086; }
+  .status-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: #6c7086; margin-left: auto; flex-shrink: 0;
+  }
+  .status-dot.online { background: #a6e3a1; }
+  .status-dot.offline { background: #f38ba8; }
+
+  /* Tabs */
+  .tabs {
+    display: flex;
+    background: #181825;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .tab {
+    flex: 1; padding: 9px; text-align: center; cursor: pointer;
+    font-size: 12px; font-weight: 500; color: #6c7086;
+    border-bottom: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .tab.active { color: #89b4fa; border-bottom-color: #89b4fa; }
+  .tab:hover:not(.active) { color: #bac2de; }
+
+  /* Tab content */
+  .tab-content { display: none; padding: 14px 16px; }
+  .tab-content.active { display: block; }
+
+  /* Stats cards */
+  .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
+  .stat-card {
+    background: #313244; border-radius: 10px; padding: 12px;
+    text-align: center;
+  }
+  .stat-value { font-size: 22px; font-weight: 700; color: #cdd6f4; }
+  .stat-label { font-size: 10px; color: #6c7086; margin-top: 2px; text-transform: uppercase; letter-spacing: 0.06em; }
+
+  /* Score gauge */
+  .site-score-block {
+    background: #313244; border-radius: 10px; padding: 14px;
+    text-align: center; margin-bottom: 14px;
+  }
+  .site-score-label { font-size: 11px; color: #6c7086; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.06em; }
+  .gauge-wrap { display: inline-block; position: relative; }
+  .gauge-pct { position: absolute; bottom: 0; left: 50%; transform: translateX(-50%); font-size: 20px; font-weight: 700; }
+  .site-verdict { font-size: 14px; font-weight: 600; margin-top: 6px; }
+
+  /* Buttons */
+  .btn {
+    display: block; width: 100%; padding: 9px 14px;
+    border: none; border-radius: 8px; cursor: pointer;
+    font-size: 13px; font-weight: 500; text-align: center;
+    transition: opacity 0.15s;
+  }
+  .btn:hover { opacity: 0.85; }
+  .btn-primary { background: #89b4fa; color: #1e1e2e; }
+  .btn-danger  { background: #f38ba8; color: #1e1e2e; }
+  .btn-ghost   { background: rgba(255,255,255,0.06); color: #cdd6f4; }
+  .btn + .btn  { margin-top: 8px; }
+
+  /* Section titles */
+  .section-title {
+    font-size: 10px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: #6c7086; font-weight: 600; margin-bottom: 8px;
+  }
+
+  /* List */
+  .domain-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; max-height: 140px; overflow-y: auto; }
+  .domain-item {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #313244; border-radius: 7px; padding: 7px 10px;
+    font-size: 12px;
+  }
+  .domain-item .remove { background: none; border: none; color: #6c7086; cursor: pointer; font-size: 14px; }
+  .domain-item .remove:hover { color: #f38ba8; }
+  .tag {
+    font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 600;
+  }
+  .tag-white { background: #a6e3a1; color: #1e2820; }
+  .tag-black { background: #f38ba8; color: #2e1a1a; }
+
+  /* Input row */
+  .input-row { display: flex; gap: 8px; margin-bottom: 10px; }
+  .input-row input {
+    flex: 1; background: #313244; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px; padding: 8px 10px; color: #cdd6f4; font-size: 12px; outline: none;
+  }
+  .input-row input:focus { border-color: #89b4fa; }
+  .input-row button {
+    background: #89b4fa; color: #1e1e2e; border: none; border-radius: 7px;
+    padding: 8px 12px; font-size: 12px; font-weight: 600; cursor: pointer;
+  }
+  .input-row select {
+    background: #313244; border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 7px; padding: 8px 10px; color: #cdd6f4; font-size: 12px; outline: none;
+  }
+
+  /* Recent scans */
+  .scan-history { display: flex; flex-direction: column; gap: 6px; max-height: 200px; overflow-y: auto; }
+  .scan-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #313244; border-radius: 7px; padding: 8px 10px; font-size: 12px;
+  }
+  .scan-domain { color: #bac2de; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 200px; }
+  .scan-score { font-weight: 700; }
+
+  .empty-state { text-align: center; color: #6c7086; padding: 24px 0; font-size: 12px; }
+
+  /* Footer */
+  .popup-footer {
+    padding: 10px 16px; border-top: 1px solid rgba(255,255,255,0.06);
+    font-size: 10px; color: #45475a; text-align: center;
+    background: #181825;
+  }
+
+  .server-banner {
+    background: rgba(243,139,168,0.12); border: 1px solid rgba(243,139,168,0.25);
+    border-radius: 8px; padding: 10px; font-size: 11px; color: #f38ba8;
+    margin-bottom: 12px; line-height: 1.5;
+  }
+  .server-banner strong { display: block; margin-bottom: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span class="header-icon">🤖</span>
+  <div>
+    <div class="header-title">AI Text Detector</div>
+    <div class="header-sub" id="currentDomain">Loading…</div>
+  </div>
+  <div class="status-dot" id="statusDot" title="Backend status"></div>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="overview">Overview</div>
+  <div class="tab" data-tab="history">History</div>
+  <div class="tab" data-tab="lists">Lists</div>
+</div>
+
+<!-- OVERVIEW TAB -->
+<div class="tab-content active" id="tab-overview">
+  <div id="serverWarning" class="server-banner" style="display:none">
+    <strong>⚠️ Backend offline</strong>
+    Start the Python server: <code>python server.py</code>
+  </div>
+
+  <div class="site-score-block">
+    <div class="site-score-label">This Site – Avg AI Score</div>
+    <div class="gauge-wrap">
+      <svg id="gaugesvg" viewBox="0 0 100 60" width="110" height="66">
+        <path d="M10,50 A40,40 0 0,1 90,50" fill="none" stroke="#313244" stroke-width="10" stroke-linecap="round"/>
+        <path id="gaugeFill" d="M10,50 A40,40 0 0,1 90,50" fill="none" stroke="#6c7086" stroke-width="10"
+          stroke-linecap="round" stroke-dasharray="0 125.6"/>
+      </svg>
+      <div class="gauge-pct" id="gaugePct" style="color:#6c7086">—</div>
+    </div>
+    <div class="site-verdict" id="siteVerdict" style="color:#6c7086">No data yet</div>
+  </div>
+
+  <div class="stats-grid">
+    <div class="stat-card">
+      <div class="stat-value" id="statScans">0</div>
+      <div class="stat-label">Scans</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-value" id="statHighRisk">0</div>
+      <div class="stat-label">High AI risk</div>
+    </div>
+  </div>
+
+  <button class="btn btn-primary" id="btnRescan">🔄 Re-scan This Page</button>
+  <button class="btn btn-ghost" id="btnClearSite" style="margin-top:8px">Clear site data</button>
+</div>
+
+<!-- HISTORY TAB -->
+<div class="tab-content" id="tab-history">
+  <div class="section-title">Recently Scanned Sites</div>
+  <div id="scanHistory" class="scan-history">
+    <div class="empty-state">No scan history yet</div>
+  </div>
+  <button class="btn btn-danger" id="btnClearAll" style="margin-top:12px">Clear All History</button>
+</div>
+
+<!-- LISTS TAB -->
+<div class="tab-content" id="tab-lists">
+  <div class="section-title">Add Domain to List</div>
+  <div class="input-row">
+    <input type="text" id="listDomainInput" placeholder="example.com">
+    <select id="listTypeSelect">
+      <option value="whitelist">Whitelist</option>
+      <option value="blacklist">Blacklist</option>
+    </select>
+    <button id="btnAddList">Add</button>
+  </div>
+
+  <div class="section-title">Whitelist (skip analysis)</div>
+  <div id="whitelistItems" class="domain-list">
+    <div class="empty-state">No whitelisted domains</div>
+  </div>
+
+  <div class="section-title">Blacklist (always flag)</div>
+  <div id="blacklistItems" class="domain-list">
+    <div class="empty-state">No blacklisted domains</div>
+  </div>
+</div>
+
+<div class="popup-footer">AI Text Detector v1.0 • Powered by Mistral 7b</div>
+
+<script src="popup.js"></script>
+</body>
+</html>
